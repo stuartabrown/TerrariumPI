@@ -431,25 +431,25 @@ div.row.documentation img {
 }
 
 /* Dashboard */
-#usage_content .interactive_screenshot #screenshot_dashboard_top_indicators {
+#usage_content .interactive_screenshot #screenshot_home_tab_dashboard_top_indicators {
   left: 74%;
   top: 0%;
   height: 6.4%;
   width: 26%;
 }
-#usage_content .interactive_screenshot #screenshot_dashboard_top_tiles {
+#usage_content .interactive_screenshot #screenshot_home_tab_dashboard_top_tiles {
   left: 14.4%;
   top: 6.4%;
   height: 12%;
   width: 85.6%;
 }
-#usage_content .interactive_screenshot #screenshot_dashboard_environment {
+#usage_content .interactive_screenshot #screenshot_home_tab_dashboard_environment {
   top: 19%;
   height: 50%;
   left: 79%;
   width: 20%;
 }
-#usage_content .interactive_screenshot #screenshot_dashboard_graphs {
+#usage_content .interactive_screenshot #screenshot_home_tab_dashboard_graphs {
   top: 19%;
   height: 59%;
   left: 15.5%;
@@ -458,21 +458,21 @@ div.row.documentation img {
 /* End dashboard */
 
 /* Weather */
-#usage_content .interactive_screenshot #screenshot_weather_forecast_current {
+#usage_content .interactive_screenshot #screenshot_home_tab_weather_forecast_current {
   top: 12.4%;
   height: 42%;
   left: 15.5%;
   width: 27.2%;
 }
 
-#usage_content .interactive_screenshot #screenshot_weather_forecast_day {
+#usage_content .interactive_screenshot #screenshot_home_tab_weather_forecast_day {
   top: 12.4%;
   height: 29.1%;
   left: 43.7%;
   width: 55.2%;
 }
 
-#usage_content .interactive_screenshot #screenshot_weather_forecast_week {
+#usage_content .interactive_screenshot #screenshot_home_tab_weather_forecast_week {
   top: 42%;
   height: 29.1%;
   left: 43.7%;

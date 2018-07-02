@@ -33,20 +33,31 @@
                         <p>{{_('The following external Python libraries are used')}}</p>
                         <strong>{{_('Raspbian OS')}}</strong>
                         <ul>
-                          <li><strong>Bottle</strong> http://bottlepy.org/</li>
+
                           <li><strong>OW</strong> http://owfs.sourceforge.net/owpython.html</li>
                           <li><strong>RPi.GPIO</strong> https://pypi.python.org/pypi/RPi.GPIO</li>
                           <li><strong>PiCamera</strong> https://pypi.python.org/pypi/picamera/</li>
                           <li><strong>psutil</strong> https://pypi.python.org/pypi/psutil/</li>
                           <li><strong>OpenCV</strong> https://pypi.python.org/pypi/opencv-python</li>
+                          <li><strong>pigpio</strong> http://abyz.me.uk/rpi/pigpio/python.html</li>
+                          <li><strong>Requests: HTTP for Humans</strong> https://requests.readthedocs.io/en/stable/</li>
+                          <li><strong>mediainfodll</strong></li>
+                          <li><strong>gpiozero</strong> https://gpiozero.readthedocs.io/en/stable/</li>
+                          <li><strong>smbus</strong> </li>
                         </ul>
                         <strong>{{_('PIP')}}</strong>
                         <ul>
+                          <li><strong>bottle</strong> http://bottlepy.org/</li>
+                          <li><strong>bottle_websocket</strong> https://pypi.python.org/pypi/bottle-websocket</li>
                           <li><strong>gevent</strong> https://pypi.python.org/pypi/gevent</li>
                           <li><strong>untangle</strong> https://pypi.python.org/pypi/untangle</li>
                           <li><strong>uptime</strong> https://pypi.python.org/pypi/uptime</li>
-                          <li><strong>bottle_websocket</strong> https://pypi.python.org/pypi/bottle-websocket</li>
                           <li><strong>pylibftdi</strong> https://pypi.python.org/pypi/pylibftdi</li>
+                          <li><strong>pyalsaaudio</strong> https://pypi.python.org/pypi/pylibftdi</li>
+                          <li><strong>pyserial</strong> https://pypi.python.org/pypi/pyserial</li>
+                          <li><strong>python-twitter</strong> https://pypi.python.org/pypi/python-twitter</li>
+                          <li><strong>python-pushover</strong> https://pypi.python.org/pypi/python-pushover</li>
+                          <li><strong>requests[socks]</strong> https://requests.readthedocs.io/en/stable/</li>
                         </ul>
                         <strong>{{_('Source')}}</strong>
                         <ul>
@@ -81,7 +92,7 @@
                   <h2>{{_('Feature request')}}</h2>
                   <p>{{!_('Missing something? Drop a feature request on %s and we will see what can be done.') % ('<a href="htt</a>ps://github.com/theyosh/TerrariumPI" target="_blank" title="' + _('Download TerrariumPI on Github') + '">Github</a>')}}</p>
                   <h2>{{_('Copyright')}}</h2>
-                  <p>&copy; Copyright 2015 - 2017</p>
+                  <p>&copy; Copyright 2015 - 2018</p>
                 </div>
                 <div aria-labelledby="info_tab_example" class="tab-pane fade" id="info-tab-example" role="tabpanel">
                   <h2>{{_('Example setup')}}</h2>
@@ -107,6 +118,7 @@
                   <a href="static/images/photos/DistanceSensor1.jpg" data-fancybox="gallery"><img src="static/images/photos/DistanceSensor1.jpg" class="thumbnail alignleft"/></a>
                   <a href="static/images/photos/DistanceSensor2.jpg" data-fancybox="gallery"><img src="static/images/photos/DistanceSensor2.jpg" class="thumbnail alignleft"/></a>
                   <a href="static/images/photos/DistanceSensor5.jpg" data-fancybox="gallery"><img src="static/images/photos/DistanceSensor5.jpg" class="thumbnail alignleft"/></a>
+                  <a href="static/images/photos/de2b8d7f52f0d204cc7667a23b2a7902_raw.jpg" data-fancybox="gallery"><img src="static/images/photos/de2b8d7f52f0d204cc7667a23b2a7902_raw.jpg" class="thumbnail alignleft"/></a>
                 </div>
               </div>
             </div>
