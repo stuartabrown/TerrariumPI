@@ -54,15 +54,14 @@
         <script type="text/javascript">
           $('ul.nav.nav-tabs.tabs-right a').hover(
               function() {
-                $($(this).attr('href').replace('usage-tab','screenshot').replace(/-/g,'_')).addClass('hover');
+                $($(this).attr('href').replace('usage-','screenshot-').replace(/-/g,'_')).addClass('hover');
               },
               function() {
-                $($(this).attr('href').replace('usage-tab','screenshot').replace(/-/g,'_')).removeClass('hover');
+                $($(this).attr('href').replace('usage-','screenshot-').replace(/-/g,'_')).removeClass('hover');
               }
           );
-
           $('div.interactive_screenshot div.click_area').on('click',function(){
-            var link = $(this).attr('id').replace('screenshot','usage-tab').replace(/_/g,'-');
+            var link = $(this).attr('id').replace('screenshot_','usage-').replace(/_/g,'-');
             $('ul.nav.nav-tabs.tabs-right a[href="#' + link + '"]').click();
           });
         </script>
