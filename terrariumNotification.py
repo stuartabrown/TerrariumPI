@@ -151,7 +151,7 @@ class terrariumNotificationTelegramBot(object):
     last_update_id = None
 
     error_counter = 0
-    while self.__running and error_counter < 3:
+    while self.__running and error_counter < 5:
       try:
         updates = self.__get_updates(last_update_id)
         if error_counter > 0:
@@ -401,7 +401,7 @@ class terrariumNotification(object):
       if lednr is not None:
         GPIO.setup(lednr, GPIO.OUT)
         GPIO.output(lednr,1)
-        time.sleep(1)
+        sleep(1)
         GPIO.output(lednr,0)
 
   def send_notication_led(self,message_id):
@@ -509,7 +509,10 @@ class terrariumNotification(object):
       except Exception, ex:
         print ex
 
-    mailserver.quit()
+    try:
+      mailserver.quit()
+    except Exception, ex:
+      pass
 
   def set_twitter(self,consumer_key,consumer_secret,access_token,access_token_secret):
     if '' != consumer_key and '' != consumer_secret and '' != access_token and '' != access_token_secret:

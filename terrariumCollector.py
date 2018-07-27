@@ -135,11 +135,11 @@ class terrariumCollector(object):
                 if 'duplicate column name' not in str(ex):
                   logger.error('Error updating collector database. Please contact support. Error message: %s' % (ex,))
 
-          if '380' == update_version:
-            self.__upgrade_to_380()
+            if '380' == update_version:
+              self.__upgrade_to_380()
 
         db.commit()
-        if int(update_version) % 10 == 0:
+        if int(to_version) % 10 == 0:
           logger.info('Cleaning up disk space. This will take a couple of minutes depending on the database size and sd card disk speed.')
           cur.execute('VACUUM')
 
@@ -233,7 +233,7 @@ class terrariumCollector(object):
       with self.db as db:
         cur = db.cursor()
 
-        if type in ['humidity','moisture','temperature','distance','ph','conductivity','light']:
+        if type in ['humidity','moisture','temperature','distance','ph','conductivity','light','uva','uvb','fertility']:
           cur.execute('REPLACE INTO sensor_data (id, type, timestamp, current, limit_min, limit_max, alarm_min, alarm_max, alarm) VALUES (?,?,?,?,?,?,?,?,?)',
                       (id, type, now, newdata['current'], newdata['limit_min'], newdata['limit_max'], newdata['alarm_min'], newdata['alarm_max'], newdata['alarm']))
 
@@ -315,7 +315,7 @@ class terrariumCollector(object):
   def log_system_data(self, data):
     self.__log_data('system',None,data)
 
-  def get_history(self, parameters = [], starttime = None, stoptime = None):
+  def get_history(self, parameters = [], starttime = None, stoptime = None, exclude_ids = None):
     # Default return object
     timer = time.time()
     history = {}
@@ -354,16 +354,19 @@ class terrariumCollector(object):
           sql = sql + ', AVG(' + field + ') as ' + field
         sql = sql + ' FROM sensor_data WHERE timestamp >= ? AND timestamp <= ?'
 
+        if exclude_ids is not None:
+          sql = sql + ' AND sensor_data.id NOT IN (\'' + '\',\''.join(exclude_ids) +'\')'
+
         if len(parameters) == 2:
           sql = sql + ' AND type = ?'
           filters = (stoptime,starttime,parameters[1],)
 
         sql = sql + ' GROUP BY type, timestamp'
 
-      elif len(parameters) == 2 and parameters[0] in ['temperature','humidity','distance','ph','conductivity','light']:
+      elif len(parameters) == 2 and parameters[0] in ['temperature','humidity','distance','ph','conductivity','light','uva','uvb','fertility']:
         sql = sql + ' AND type = ? AND id = ?'
         filters = (stoptime,starttime,parameters[0],parameters[1],)
-      elif len(parameters) == 1 and parameters[0] in ['temperature','humidity','distance','ph','conductivity','light']:
+      elif len(parameters) == 1 and parameters[0] in ['temperature','humidity','distance','ph','conductivity','light','uva','uvb','fertility']:
         sql = sql + ' AND type = ?'
         filters = (stoptime,starttime,parameters[0],)
 
@@ -385,7 +388,7 @@ class terrariumCollector(object):
                  LEFT JOIN switch_data AS t2
                  ON t2.id = t1.id
                  AND t2.timestamp = (SELECT MIN(timestamp) FROM switch_data WHERE timestamp > t1.timestamp AND id = t1.id) )
-              WHERE timestamp >= (SELECT MAX(timestamp) AS timelimit FROM door_data AS ttable WHERE ttable.id = id AND ttable.timestamp < ?)
+              WHERE timestamp >= IFNULL((SELECT MAX(timestamp) AS timelimit FROM door_data AS ttable WHERE ttable.id = id AND ttable.timestamp < ?),0)
               AND   timestamp <= ?'''
 
       if len(parameters) > 0 and parameters[0] is not None:
@@ -403,8 +406,9 @@ class terrariumCollector(object):
                  FROM door_data AS t1
                  LEFT JOIN door_data AS t2
                  ON t2.id = t1.id
+                 AND t1.state != t2.state
                  AND t2.timestamp = (SELECT MIN(timestamp) FROM door_data WHERE timestamp > t1.timestamp AND id = t1.id) )
-              WHERE timestamp >= (SELECT MAX(timestamp) AS timelimit FROM door_data AS ttable WHERE ttable.id = id AND ttable.timestamp < ?)
+              WHERE timestamp >= IFNULL((SELECT MAX(timestamp) AS timelimit FROM door_data AS ttable WHERE ttable.id = id AND ttable.timestamp < ?),0)
               AND   timestamp <= ?'''
 
       if len(parameters) > 0 and parameters[0] is not None:
@@ -471,11 +475,13 @@ class terrariumCollector(object):
 
               if row['type'] in ['switches','doors'] and row['state'] > 0 and row['timestamp2'] is not None and '' != row['timestamp2']:
                 # Update totals data
-                history[row['type']][row['id']]['totals']['duration'] += (row['timestamp2'] - row['timestamp'])
+                duration = float(row['timestamp2'] - row['timestamp'])
+                history[row['type']][row['id']]['totals']['duration'] += duration
 
                 if 'switches' == row['type']:
-                  history[row['type']][row['id']]['totals']['power_wattage'] += (row['timestamp2'] - row['timestamp']) * row['power_wattage']
-                  history[row['type']][row['id']]['totals']['water_flow'] += (row['timestamp2'] - row['timestamp']) * row['water_flow']
+                  history[row['type']][row['id']]['totals']['power_wattage'] += duration * float(row['power_wattage'])
+                  # Devide by 60 to get Liters water used per minute based on seconds durations
+                  history[row['type']][row['id']]['totals']['water_flow'] += (duration / 60.0) * float(row['water_flow'])
 
               for field in fields:
                 history[row['type']][row['id']][field].append([row['timestamp'] * 1000,row[field]])
