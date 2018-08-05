@@ -22,7 +22,7 @@
                   <a aria-expanded="false" data-toggle="tab" href="#usage-tab-audio" id="usage_tab_audio" role="tab"><i class="fa fa-music"></i> {{_('Audio')}}</a>
                 </li>
                 <li role="presentation">
-                  <a aria-expanded="false" data-toggle="tab" href="#usage-tab-environment" id="usage_tab_system" role="tab"><i class="fa fa-lightbulb-o"></i> {{_('Environment')}}</a>
+                  <a aria-expanded="false" data-toggle="tab" href="#usage-tab-system" id="usage_tab_system" role="tab"><i class="fa fa-cog"></i> {{_('System')}}</a>
                 </li>
               </ul>
               <div class="tab-content" id="usage_content">
@@ -44,8 +44,8 @@
                 <div aria-labelledby="usage_tab_webcam" class="tab-pane fade" id="usage-tab-webcam" role="tabpanel">
                   % include('inc/usage_webcams.tpl')
                 </div>
-                <div aria-labelledby="usage_tab_environment" class="tab-pane fade" id="usage-tab-environment" role="tabpanel">
-                  % include('inc/usage_environment.tpl')
+                <div aria-labelledby="usage_tab_environment" class="tab-pane fade" id="usage-tab-system" role="tabpanel">
+                  % include('inc/usage_system.tpl')
                 </div>
               </div>
             </div>

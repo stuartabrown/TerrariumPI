@@ -2,14 +2,13 @@
                         <div class="tab-content">
                           <div class="tab-pane active" id="usage-home-tab-profile-dashboard">
                             <div class="interactive_screenshot">
-                              <div id="screenshot_home_tab_weather_forecast_current" class="click_area" title="{{_('Weather')}} {{_('Current')}}"></div>
-                              <div id="screenshot_home_tab_weather_forecast_day" class="click_area" title="{{_('Day forecast')}}"></div>
-                              <div id="screenshot_home_tab_weather_forecast_week" class="click_area" title="{{_('Week forecast')}}"></div>
-                              <img src="static/images/documentation/weather_forecast.png" alt="{{_('Weather forecast screenshot')}}" />
+                              <div id="screenshot_home_tab_profile_settings" class="click_area" title="{{_('Profile')}} {{_('Settings')}}"></div>
+                              <img src="static/images/documentation/profile.png" alt="{{_('Profile screenshot')}}" />
                             </div>
                           </div>
-                          <div class="tab-pane active" id="usage-home-tab-profile-settings">
+                          <div class="tab-pane" id="usage-home-tab-profile-settings">
                             <h3 class="lead">{{_('Settings')}}</h3>
+                            <img src="static/images/documentation/profile_edit.png" alt="{{_('Profile edit screenshot')}}" />
                           </div>
                         </div>
                       </div>

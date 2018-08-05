@@ -6,6 +6,9 @@
                               <div id="screenshot_home_tab_dashboard_top_tiles" class="click_area" title="{{_('Top tiles')}}"></div>
                               <div id="screenshot_home_tab_dashboard_environment" class="click_area" title="{{_('Environment')}}"></div>
                               <div id="screenshot_home_tab_dashboard_graphs" class="click_area" title="{{_('Graphs')}}"></div>
+
+                              <div id="screenshot_home_tab_dashboard_bottom_indicators" class="click_area" title="{{_('Bottom indicators')}}"></div>
+
                               <img src="static/images/documentation/dashboard.png" alt="{{_('Dashboard screenshot')}}" />
                             </div>
                           </div>
@@ -149,13 +152,19 @@
                             <p>{{_('Every sensor has his own type and a minimum and maximum value. To get the graph data all the data is combined and divided by the amount of sensors. This way the average of the sensors is used.')}}</p>
                             <img src="static/images/documentation/dashboard_graphs.gif" alt="Dashboard top indicators online screenshot" class="img-thumbnail" />
                             <div class="row">
-                              <h4><span aria-hidden="true" class="glyphicon glyphicon-tint"></span>/<span aria-hidden="true" class="glyphicon glyphicon-fire"></span> {{_('Type')}}</h4>
+                              <h4>{{_('Type')}}</h4>
                               <p>
                                 {{_('There are multiple graph times. On the home there is a humidity and a temperature graph shown.')}}
                               </p>
                               <ul>
-                                <li><span aria-hidden="true" class="glyphicon glyphicon-tint"></span> {{_('Humidity')}}</li>
                                 <li><span aria-hidden="true" class="glyphicon glyphicon-fire"></span> {{_('Temperature')}}</li>
+                                <li><span aria-hidden="true" class="glyphicon glyphicon-tint"></span> {{_('Humidity')}}</li>
+                                <li><span aria-hidden="true" class="glyphicon glyphicon-tint"></span> {{_('Moisture')}}</li>
+                                <li><span aria-hidden="true" class="glyphicon glyphicon-flash"></span> {{_('Conductivity')}}</li>
+                                <li><span aria-hidden="true" class="glyphicon glyphicon-signal"></span> {{_('Distance')}}</li>
+                                <li><span aria-hidden="true" class="glyphicon glyphicon-scale"></span> {{_('pH')}}</li>
+                                <li><span aria-hidden="true" class="glyphicon glyphicon-adjust"></span> {{_('Light')}}</li>
+                                <li><span aria-hidden="true" class="glyphicon glyphicon-grain"></span> {{_('Fertility')}}</li>
                               </ul>
                             </div>
                             <div class="row">
@@ -167,7 +176,13 @@
                             <div class="row">
                               <h4><span class="badge bg-red">{{_('warning')}}</span> {{_('warning')}}</h4>
                               <p>
-                                {{_('When the current value is outside the minimum of maximum value a red warning badge is shown.')}}
+                                {{_('When the current value is outside the minimum or maximum value a red warning badge is shown.')}}
+                              </p>
+                            </div>
+                            <div class="row">
+                              <h4><span class="badge bg-orange">{{_('error')}}</span> {{_('error')}}</h4>
+                              <p>
+                                {{_('When the current value is outside the minimum or maximum value for more then 10 minutes an orange warning badge is shown.')}}
                               </p>
                             </div>
                             <div class="row">
@@ -189,6 +204,18 @@
                               <p>{{_('With the wrench you will get an options menu.')}}</p>
                             </div>
                           </div>
+
+
+                          <div class="tab-pane" id="usage-home-tab-dashboard-bottom-indicators">
+                            <h3 class="lead">{{_('Bottom indicators')}}</h3>
+                            <p>{{_('The dashboard has two indicators and a clock on the top row at the right site.')}}</p>
+
+                            <div class="row">
+
+                            </div>
+                          </div>
+
+
                         </div>
                       </div>
                       <div class="col-xs-3">
@@ -197,16 +224,19 @@
                             <a data-toggle="tab" href="#usage-home-tab-dashboard-dashboard" title="{{_('Dashboard')}}">{{_('Dashboard')}}</a>
                           </li>
                           <li>
-                            <a data-toggle="tab" href="#usage-home-tab-dashboard-top-indicators" title="{{_('Profile')}}">{{_('Top indicators')}}</a>
+                            <a data-toggle="tab" href="#usage-home-tab-dashboard-top-indicators" title="{{_('Top indicators')}}">{{_('Top indicators')}}</a>
                           </li>
                           <li>
-                            <a data-toggle="tab" href="#usage-home-tab-dashboard-top-tiles" title="{{_('Weather')}}">{{_('Top tiles')}}</a>
+                            <a data-toggle="tab" href="#usage-home-tab-dashboard-top-tiles" title="{{_('Top tiles')}}">{{_('Top tiles')}}</a>
                           </li>
                           <li>
-                            <a data-toggle="tab" href="#usage-home-tab-dashboard-environment" title="{{_('Calendar')}}">{{_('Environement')}}</a>
+                            <a data-toggle="tab" href="#usage-home-tab-dashboard-environment" title="{{_('Environment')}}">{{_('Environment')}}</a>
                           </li>
                           <li>
                             <a data-toggle="tab" href="#usage-home-tab-dashboard-graphs" title="{{_('Graphs')}}">{{_('Graphs')}}</a>
+                          </li>
+                          <li>
+                            <a data-toggle="tab" href="#usage-home-tab-dashboard-bottom-indicators" title="{{_('Bottom indicators')}}">{{_('Bottom indicators')}}</a>
                           </li>
                         </ul>
                       </div>

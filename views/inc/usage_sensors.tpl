@@ -1,7 +1,7 @@
                   <div class="col-xs-9">
                     <!-- Tab panes -->
                     <div class="tab-content">
-                      <div class="tab-pane active" id="usage-tab-sensors-list">
+                      <div class="tab-pane active" id="usage-sensors-list">
                         <div class="interactive_screenshot">
                           <div id="screenshot_sensors_title" class="click_area" title="{{_('Title')}}"></div>
                           <div id="screenshot_sensors_current" class="click_area" title="{{_('Current value')}}"></div>
@@ -9,11 +9,11 @@
                           <img src="static/images/documentation/sensors_list.gif" alt="{{_('Sensors overview screenshot')}}" />
                         </div>
                       </div>
-                      <div class="tab-pane" id="usage-tab-sensors-graphs">
+                      <div class="tab-pane" id="usage-sensors-graphs">
                         <p>{{_('On the sensors page you can find all the available sensors page grouped by type. Select temperature from the menu to get all the temperature sensors. Select humidity for all humidity sensors.')}}</p>
                         <p>{{_('Per graph you have the following options and indicators.')}}</p>
                       </div>
-                      <div class="tab-pane" id="usage-tab-sensors-title">
+                      <div class="tab-pane" id="usage-sensors-title">
                         <h3 class="lead">{{_('Title')}}</h3>
                         <p>{{_('Per sensor the title shows some values and options.')}}</p>
                         <div class="x_panel">
@@ -23,6 +23,7 @@
                               <span class="title">{{_('Sensor')}} '{{_('Name')}}'</span>
                               <small>...</small>
                               <span class="badge bg-red">{{_('warning')}}</span>
+                              <span class="badge bg-orange">{{_('error')}}</span>
                             </h2>
                             <ul class="nav navbar-right panel_toolbox">
                               <li>
@@ -49,7 +50,10 @@
                                 <a aria-expanded="false" class="dropdown-toggle" data-toggle="dropdown" href="javascript:;" role="button"><i class="fa fa-wrench" title="{{_('Options')}}"></i></a>
                                 <ul class="dropdown-menu" role="menu">
                                   <li>
-                                    <a href="javascript:;" onclick="menu_click('sensor_settings.html')">{{_('Settings')}}</a>
+                                    <a href="javascript:;" >{{_('Settings')}}</a>
+                                  </li>
+                                  <li>
+                                    <a href="javascript:;" class="export">{{_('Export data')}}</a>
                                   </li>
                                 </ul>
                               </li>
@@ -64,14 +68,20 @@
                         <ul>
                           <li>{{_('The sensor type')}}
                             <ul>
-                              <li><span aria-hidden="true" class="glyphicon glyphicon-tint"></span>: {{_('Humidity sensor')}}</li>
-                              <li><span aria-hidden="true" class="glyphicon glyphicon-fire"></span>: {{_('Temperature sensor')}}</li>
-                              <li><span aria-hidden="true" class="glyphicon glyphicon-signal"></span>: {{_('Distance sensor')}}</li>
+                              <li><span aria-hidden="true" class="glyphicon glyphicon-fire"></span> {{_('Temperature')}}</li>
+                              <li><span aria-hidden="true" class="glyphicon glyphicon-tint"></span> {{_('Humidity')}}</li>
+                              <li><span aria-hidden="true" class="glyphicon glyphicon-tint"></span> {{_('Moisture')}}</li>
+                              <li><span aria-hidden="true" class="glyphicon glyphicon-flash"></span> {{_('Conductivity')}}</li>
+                              <li><span aria-hidden="true" class="glyphicon glyphicon-signal"></span> {{_('Distance')}}</li>
+                              <li><span aria-hidden="true" class="glyphicon glyphicon-scale"></span> {{_('pH')}}</li>
+                              <li><span aria-hidden="true" class="glyphicon glyphicon-adjust"></span> {{_('Light')}}</li>
+                              <li><span aria-hidden="true" class="glyphicon glyphicon-grain"></span> {{_('Fertility')}}</li>
                             </ul>
                           </li>
                           <li>{{_('The configured name')}}</li>
                           <li>{{_('The time stamp of the last measurement.')}}</li>
                           <li>{{_('Warning badge when the sensor value is outside the defined save operating values.')}}</li>
+                          <li>{{_('Error badge when the sensor value is outside the defined save operating values for more then 10 minutes.')}}</li>
                         </ul>
                         <h4>{{_('Right side')}} <small>({{_('Options')}})</small></h4>
                         <ul>
@@ -81,7 +91,7 @@
                           <li><i class="fa fa-close" title="{{_('Close')}}"></i>: {{_('Close')}}</li>
                         </ul>
                       </div>
-                      <div class="tab-pane" id="usage-tab-sensors-current">
+                      <div class="tab-pane" id="usage-sensors-current">
                         <h3 class="lead">{{_('Current')}}</h3>
                         <div id="currentvalue" class="sidebar-widget text-center alignright">
                           <canvas class="gauge"></canvas>
@@ -93,13 +103,13 @@
                         <p>{{_('The values are updated every 30 seconds and updated in real time on the page.')}}</p>
                         <p>{{_('The current value is also written below the graph in degrees, percentage or distance.')}}</p>
                       </div>
-                      <div class="tab-pane" id="usage-tab-sensors-graph">
+                      <div class="tab-pane" id="usage-sensors-graph">
                         <h3 class="lead">{{_('History graph')}}</h3>
                         <img src="static/images/documentation/history_graph_sensor.png" alt="{{_('Sensor history graph')}}" class="img-thumbnail" /><br /><br />
                         <p>{{_('The history graph will shows the measured value. The flat lines are the minimum and maximum values that are configured. When the measured value is outside this range an alarm will be given. Hover above the graph lines to get detailed information.')}}</p>
                         <p>{{!_('Use the calendar icon %s in the title to select the period for the history graph.') % '<i class="fa fa-calendar"></i>'}}</p>
                       </div>
-                      <div class="tab-pane" id="usage-tab-sensors-settings">
+                      <div class="tab-pane" id="usage-sensors-settings">
                         <h3 class="lead">{{_('Settings')}}</h3>
                         <p>{{!_('On the door settings page you can configure all needed doors. Click on %s button to add a new door. And empty form like below is shown and has to be filled in. Make sure the right values are filled in. All fields with a %s are required.') % ('<button type="button" class="btn btn-primary"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>','<span class="required">*</span>',)}}</p>
                         <div class="row">
@@ -197,19 +207,19 @@
                     <!-- Nav tabs -->
                     <ul class="nav nav-tabs tabs-right">
                       <li class="active">
-                        <a data-toggle="tab" href="#usage-tab-sensors-list" title="{{_('Overview')}}">{{_('Overview')}}</a>
+                        <a data-toggle="tab" href="#usage-sensors-list" title="{{_('Overview')}}">{{_('Overview')}}</a>
                       </li>
                       <li>
-                        <a data-toggle="tab" href="#usage-tab-sensors-title" title="{{_('Title')}}">{{_('Title')}}</a>
+                        <a data-toggle="tab" href="#usage-sensors-title" title="{{_('Title')}}">{{_('Title')}}</a>
                       </li>
                       <li>
-                        <a data-toggle="tab" href="#usage-tab-sensors-current" title="{{_('Current')}}">{{_('Current')}}</a>
+                        <a data-toggle="tab" href="#usage-sensors-current" title="{{_('Current')}}">{{_('Current')}}</a>
                       </li>
                       <li>
-                        <a data-toggle="tab" href="#usage-tab-sensors-graph" title="{{_('History graph')}}">{{_('History graph')}}</a>
+                        <a data-toggle="tab" href="#usage-sensors-graph" title="{{_('History graph')}}">{{_('History graph')}}</a>
                       </li>
                       <li>
-                        <a data-toggle="tab" href="#usage-tab-sensors-settings" title="{{_('Settings')}}">{{_('Settings')}}</a>
+                        <a data-toggle="tab" href="#usage-sensors-settings" title="{{_('Settings')}}">{{_('Settings')}}</a>
                       </li>
                     </ul>
                   </div>
@@ -227,7 +237,7 @@
                         sensor_gauge('currentvalue',data);
                       });
 
-                      var target = document.querySelector('#usage-tab-sensors-current');
+                      var target = document.querySelector('#usage-sensors-current');
                       observer.observe(target, {
                         attributes: true
                       });

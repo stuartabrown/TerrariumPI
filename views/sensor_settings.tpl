@@ -74,7 +74,7 @@
                         <h2 class="temperature"><span aria-hidden="true" class="glyphicon glyphicon-fire"></span> {{_('Temperature sensor')}} <span class="title">{{_('new')}}</span></h2>
                         <h2 class="humidity" style="display:none"><span aria-hidden="true" class="glyphicon glyphicon-tint"></span> {{_('Humidity sensor')}} <span class="title">{{_('new')}}</span></h2>
                         <h2 class="moisture" style="display:none"><span aria-hidden="true" class="glyphicon glyphicon-tint"></span> {{_('Moisture sensor')}} <span class="title">{{_('new')}}</span></h2>
-                        <h2 class="conductivity" style="display:none"><span aria-hidden="true" class="glyphicon glyphicon-tint"></span> {{_('Conductivity sensor')}} <span class="title">{{_('new')}}</span></h2>
+                        <h2 class="conductivity" style="display:none"><span aria-hidden="true" class="glyphicon glyphicon-flash"></span> {{_('Conductivity sensor')}} <span class="title">{{_('new')}}</span></h2>
                         <h2 class="distance" style="display:none"><span aria-hidden="true" class="glyphicon glyphicon-signal"></span> {{_('Distance sensor')}} <span class="title">{{_('new')}}</span></h2>
                         <h2 class="ph" style="display:none"><span aria-hidden="true" class="glyphicon glyphicon-scale"></span> {{_('pH sensor')}} <span class="title">{{_('new')}}</span></h2>
                         <h2 class="light uva uvb" style="display:none"><span aria-hidden="true" class="glyphicon glyphicon-adjust"></span> {{_('Light sensor')}} <span class="title">{{_('new')}}</span></h2>

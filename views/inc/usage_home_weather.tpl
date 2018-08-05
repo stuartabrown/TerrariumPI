@@ -21,13 +21,11 @@
                             <h3 class="lead">{{_('Day forecast')}}</h3>
                             <img src="static/images/documentation/weather_forecast_day.png" alt="{{_('Weather day forecast screenshot')}}" class="img-thumbnail" /><br /><br />
                             <p>{{_('The day forecast shows the temperature per hour for 24 / 36 hours from now. The title holds the graph period.')}}</p>
-                            <p>{{!_('Use the calendar icon %s in the title to select the period for the history graph.') % '<i class="fa fa-calendar"></i>'}}</p>
                           </div>
                           <div class="tab-pane" id="usage-home-tab-weather-forecast-week">
                             <h3 class="lead">{{_('Week forecast')}}</h3>
                             <img src="static/images/documentation/weather_forecast_week.png" alt="{{_('Week forecast screenshot')}}" class="img-thumbnail" /><br /><br />
                             <p>{{_('The week forecast shows the temperature per hour for 10 days from now. The title holds the graph period.')}}</p>
-                            <p>{{!_('Use the calendar icon %s in the title to select the period for the history graph.') % '<i class="fa fa-calendar"></i>'}}</p>
                           </div>
                         </div>
                       </div>
