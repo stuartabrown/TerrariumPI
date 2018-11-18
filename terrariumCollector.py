@@ -124,14 +124,14 @@ class terrariumCollector(object):
       # Execute updates
       with self.db as db:
         cur = db.cursor()
-        for update_version in table_upgrades.keys():
+        for update_version in table_upgrades:
           if current_version < int(update_version) <= to_version:
             # Execute all updates between the versions
             for sql_upgrade in table_upgrades[update_version]:
               try:
                 cur.execute(sql_upgrade)
                 logger.info('Collector database upgrade for version %s succeeded! %s' % (update_version,sql_upgrade))
-              except Exception, ex:
+              except Exception as ex:
                 if 'duplicate column name' not in str(ex):
                   logger.error('Error updating collector database. Please contact support. Error message: %s' % (ex,))
 
@@ -233,7 +233,7 @@ class terrariumCollector(object):
       with self.db as db:
         cur = db.cursor()
 
-        if type in ['humidity','moisture','temperature','distance','ph','conductivity','light','uva','uvb','fertility']:
+        if type in ['humidity','moisture','temperature','distance','ph','conductivity','light','uva','uvb','fertility','co2','volume']:
           cur.execute('REPLACE INTO sensor_data (id, type, timestamp, current, limit_min, limit_max, alarm_min, alarm_max, alarm) VALUES (?,?,?,?,?,?,?,?,?)',
                       (id, type, now, newdata['current'], newdata['limit_min'], newdata['limit_max'], newdata['alarm_min'], newdata['alarm_max'], newdata['alarm']))
 
@@ -299,7 +299,7 @@ class terrariumCollector(object):
     return totals
 
   def log_switch_data(self,data):
-    if data['hardwaretype'] not in ['pwm-dimmer','remote-dimmer']:
+    if data['hardwaretype'] not in ['pwm-dimmer','remote-dimmer','dc-dimmer']:
       # Store normal switches with value 100 indicating full power (aka no dimming)
       data['state'] = (100 if data['state'] == 1 else 0)
 
@@ -339,7 +339,7 @@ class terrariumCollector(object):
     if stoptime is None:
       stoptime = starttime - (24 * 60 * 60)
 
-    if len(parameters) > 0 and parameters[-1] in periods.keys():
+    if len(parameters) > 0 and parameters[-1] in periods:
       stoptime = starttime - periods[parameters[-1]] * 60 * 60
       modulo = (periods[parameters[-1]] / 24) * terrariumCollector.STORE_MODULO
       del(parameters[-1])
@@ -348,7 +348,7 @@ class terrariumCollector(object):
     filters = (stoptime,starttime,)
     if logtype == 'sensors':
       fields = { 'current' : [], 'alarm_min' : [], 'alarm_max' : [] , 'limit_min' : [], 'limit_max' : []}
-      sql = 'SELECT id, type, timestamp,' + ', '.join(fields.keys()) + ' FROM sensor_data WHERE timestamp >= ? AND timestamp <= ?'
+      sql = 'SELECT id, type, timestamp,' + ', '.join(list(fields.keys())) + ' FROM sensor_data WHERE timestamp >= ? AND timestamp <= ?'
 
       if len(parameters) > 0 and parameters[0] == 'average':
         sql = 'SELECT "average" AS id, type, timestamp'
@@ -378,7 +378,7 @@ class terrariumCollector(object):
 
     elif logtype == 'switches':
       fields = { 'power_wattage' : [], 'water_flow' : [] }
-      sql = '''SELECT id, "switches" AS type, timestamp, timestamp2, state, ''' + ', '.join(fields.keys()) + ''' FROM (
+      sql = '''SELECT id, "switches" AS type, timestamp, timestamp2, state, ''' + ', '.join(list(fields.keys())) + ''' FROM (
                  SELECT
                    t1.id AS id,
                    t1.timestamp AS timestamp,
@@ -419,7 +419,7 @@ class terrariumCollector(object):
     elif logtype == 'weather':
       fields = { 'wind_speed' : [], 'temperature' : [], 'pressure' : [] , 'wind_direction' : [], 'rain' : [],
                  'weather' : [], 'icon' : []}
-      sql = 'SELECT "city" AS id, "weather" AS type, timestamp, ' + ', '.join(fields.keys()) + ' FROM weather_data WHERE timestamp >= ? AND timestamp <= ?'
+      sql = 'SELECT "city" AS id, "weather" AS type, timestamp, ' + ', '.join(list(fields.keys())) + ' FROM weather_data WHERE timestamp >= ? AND timestamp <= ?'
 
     elif logtype == 'system':
       fields = ['load_load1', 'load_load5','load_load15','uptime', 'temperature','cores', 'memory_total', 'memory_used' , 'memory_free', 'disk_total', 'disk_used' , 'disk_free']

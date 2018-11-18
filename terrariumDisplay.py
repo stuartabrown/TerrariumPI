@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 # Source: https://gist.github.com/DenisFromHR/cc863375a6e19dce359d
 
-# -*- coding: utf-8 -*-
 """
 Compiled, mashed and generally mutilated 2014-2015 by Denis Pleic
 Made available under GNU GENERAL PUBLIC LICENSE
@@ -18,14 +17,16 @@ Made available under GNU GENERAL PUBLIC LICENSE
 import smbus
 import time
 import datetime
-import thread
+try:
+  import thread as _thread
+except ImportError as ex:
+  import _thread
+import serial
 
 import Adafruit_SSD1306
-from PIL import Image
-from PIL import ImageDraw
-from PIL import ImageFont
+from PIL import Image, ImageDraw, ImageFont
 
-from terrariumUtils import terrariumUtils,terrariumSingleton
+from terrariumUtils import terrariumUtils
 
 from gevent import monkey, sleep
 monkey.patch_all()
@@ -208,10 +209,10 @@ class terrariumScreen(object):
     pass
 
   def get_max_chars(self):
-    return int(self.resolution[0]) / self.font_size
+    return int(float(self.resolution[0]) / float(self.font_size))
 
   def get_max_lines(self):
-    return int(self.resolution[1]) / self.font_size
+    return int(float(self.resolution[1]) / float(self.font_size))
 
   def get_id(self):
     return self.id
@@ -220,10 +221,9 @@ class terrariumScreen(object):
     self.address = None
     self.bus = None
     if address is not None and '' != address:
-      # Expect for now always I2C
       address = address.split(',')
       self.address = address[0]
-      self.bus = 1 if len(address) == 1 else int(address[1])
+      self.bus = 1 if len(address) == 1 else address[1]
 
   def get_address(self):
     data = str(self.address)
@@ -269,7 +269,7 @@ class terrariumScreen(object):
     if self.animating:
       return
 
-    if isinstance(messages,basestring):
+    if isinstance(messages,str):
       if len(messages) > 2 * self.get_max_chars():
         # Split long messages on a 'dot', creating multiple lines
         messages = messages.split('. ')
@@ -291,7 +291,7 @@ class terrariumScreen(object):
         if '' != submessage.strip():
           self.messages.append(submessage.strip())
 
-    thread.start_new_thread(self.display_messages, ())
+    _thread.start_new_thread(self.display_messages, ())
 
   def display_messages(self):
     if self.animating:
@@ -308,7 +308,7 @@ class terrariumScreen(object):
     starttime = time.time()
     empty_lines = []
     if max_lines > 0 and len(self.messages) > 0:
-      empty_lines = [''] * ((max_lines - (len(self.messages) % max_lines)) - (0 if not self.get_title() else len(self.messages) / max_lines))
+      empty_lines = [''] * int((max_lines - (len(self.messages) % max_lines)) - (0 if not self.get_title() else len(self.messages) / max_lines))
 
     for message in self.messages + empty_lines:
       self.write_line((line_counter % max_lines)+1,message)
@@ -340,11 +340,11 @@ class terrariumScreen(object):
     max_chars = self.get_max_chars()
 
     for line in lines:
-      for counter in xrange(1,len(line['message'])-max_chars):
+      for counter in range(1,len(line['message'])-max_chars):
         self.write_line(line['linenr'],line['message'][counter:max_chars+counter])
         sleep(terrariumScreen.__MAX_SHOW_CHAR_TIMEOUT)
 
-      for counter in xrange(len(line['message'])-max_chars,0,-1):
+      for counter in range(len(line['message'])-max_chars,0,-1):
         self.write_line(line['linenr'],line['message'][counter:max_chars+counter])
         sleep(terrariumScreen.__MAX_SHOW_CHAR_TIMEOUT)
 
@@ -353,16 +353,34 @@ class terrariumScreen(object):
 class terrariumLCD(terrariumScreen):
   def set_address(self,address):
     super(terrariumLCD,self).set_address(address)
-    self.__screen = lcd(int('0x' + str(self.address),16),self.bus)
+    self.__screen = lcd(int('0x' + str(self.address),16),int(self.bus))
 
   def write_line(self,linenr,text):
     text = text[:int(self.resolution[0])].ljust(int(self.resolution[0]))
     self.__screen.lcd_display_string(text,linenr)
 
+class terrariumLCDSerial(terrariumScreen):
+  def set_address(self,address):
+    super(terrariumLCDSerial,self).set_address(address)
+    if self.bus == 1:
+      self.bus = 9600
+    self.__screen = serial.Serial(self.address, int(self.bus))
+
+  def clear(self):
+    self.__screen.write(str.encode('00clr'))
+    sleep(1)
+
+  def write_line(self,linenr,text):
+    text = text[:int(self.resolution[0])].ljust(int(self.resolution[0]))
+    data = str.encode('0' + str(linenr-1) + str(text))
+    self.__screen.write(data)
+    # Always sleep 1 sec due to slow serial: https://www.instructables.com/id/Raspberry-Pi-Arduino-LCD-Screen/
+    sleep(1)
+
 class terrariumOLED(terrariumScreen):
   def set_address(self,address):
     super(terrariumOLED,self).set_address(address)
-    self.__screen = Adafruit_SSD1306.SSD1306_128_64(rst=None, i2c_address=int('0x' + str(self.address),16), i2c_bus=self.bus)
+    self.__screen = Adafruit_SSD1306.SSD1306_128_64(rst=None, i2c_address=int('0x' + str(self.address),16), i2c_bus=int(self.bus))
     self.init()
 
   def loading(self):
@@ -416,7 +434,10 @@ class terrariumDisplay(object):
 
   def __new__(self,id,address,name,resolution = '16x2',title = False):
     if resolution in ['16x2','20x4']:
-      return terrariumLCD(id,address,name,resolution,title)
+      if address.startswith('/dev/'):
+        return terrariumLCDSerial(id,address,name,resolution,title)
+      else:
+        return terrariumLCD(id,address,name,resolution,title)
     elif resolution in ['128x64']:
       return terrariumOLED(id,address,name,resolution,title)
 

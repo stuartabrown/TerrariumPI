@@ -1,15 +1,9 @@
 /* @preserve
- * Leaflet 1.3.2+Detached: 19247955dff7db871a0c0c100bf48ad11b8c59b8.1924795, a JS library for interactive maps. http://leafletjs.com
+ * Leaflet 1.3.4+Detached: 0e566b2ad5e696ba9f79a9d48a7e51c8f4892441.0e566b2, a JS library for interactive maps. http://leafletjs.com
  * (c) 2010-2018 Vladimir Agafonkin, (c) 2010-2011 CloudMade
  */
 
-(function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
-	typeof define === 'function' && define.amd ? define(['exports'], factory) :
-	(factory((global.L = {})));
-}(this, (function (exports) { 'use strict';
-
-var version = "1.3.2+HEAD.1924795";
+var version = "1.3.4+HEAD.0e566b2";
 
 /*
  * @namespace Util
@@ -2221,7 +2215,7 @@ function removeDoubleTapListener(obj, id) {
 // @property TRANSFORM: String
 // Vendor-prefixed transform style name (e.g. `'webkitTransform'` for WebKit).
 var TRANSFORM = testProp(
-	['transform', 'WebkitTransform', 'OTransform', 'MozTransform', 'msTransform']);
+	['transform', 'webkitTransform', 'OTransform', 'MozTransform', 'msTransform']);
 
 // webkitTransition comes first because some browser versions that drop vendor prefix don't do
 // the same for the transitionend event, in particular the Android 4.1 stock browser
@@ -5369,6 +5363,10 @@ Map.mergeOptions({
 
 Map.addInitHook(function () {
 	if (this.options.zoomControl) {
+		// @section Controls
+		// @property zoomControl: Control.Zoom
+		// The default zoom control (only available if the
+		// [`zoomControl` option](#map-zoomcontrol) was `true` when creating the map).
 		this.zoomControl = new Zoom();
 		this.addControl(this.zoomControl);
 	}
@@ -7014,7 +7012,7 @@ var Icon = Class.extend({
 
 	options: {
 		popupAnchor: [0, 0],
-		tooltipAnchor: [0, 0],
+		tooltipAnchor: [0, 0]
 	},
 
 	initialize: function (options) {
@@ -7330,22 +7328,6 @@ var Marker = Layer.extend({
 		// Option inherited from "Interactive layer" abstract class
 		interactive: true,
 
-		// @option draggable: Boolean = false
-		// Whether the marker is draggable with mouse/touch or not.
-		draggable: false,
-
-		// @option autoPan: Boolean = false
-		// Set it to `true` if you want the map to do panning animation when marker hits the edges.
-		autoPan: false,
-
-		// @option autoPanPadding: Point = Point(50, 50)
-		// Equivalent of setting both top left and bottom right autopan padding to the same value.
-		autoPanPadding: [50, 50],
-
-		// @option autoPanSpeed: Number = 10
-		// Number of pixels the map should move by.
-		autoPanSpeed: 10,
-
 		// @option keyboard: Boolean = true
 		// Whether the marker can be tabbed to with a keyboard and clicked by pressing enter.
 		keyboard: true,
@@ -7381,7 +7363,25 @@ var Marker = Layer.extend({
 		// @option bubblingMouseEvents: Boolean = false
 		// When `true`, a mouse event on this marker will trigger the same event on the map
 		// (unless [`L.DomEvent.stopPropagation`](#domevent-stoppropagation) is used).
-		bubblingMouseEvents: false
+		bubblingMouseEvents: false,
+
+		// @section Draggable marker options
+		// @option draggable: Boolean = false
+		// Whether the marker is draggable with mouse/touch or not.
+		draggable: false,
+
+		// @option autoPan: Boolean = false
+		// Whether to pan the map when dragging this marker near its edge or not.
+		autoPan: false,
+
+		// @option autoPanPadding: Point = Point(50, 50)
+		// Distance (in pixels to the left/right and to the top/bottom) of the
+		// map edge to start panning the map.
+		autoPanPadding: [50, 50],
+
+		// @option autoPanSpeed: Number = 10
+		// Number of pixels the map should pan by.
+		autoPanSpeed: 10
 	},
 
 	/* @section
@@ -8963,12 +8963,12 @@ var ImageOverlay = Layer.extend({
 		errorOverlayUrl: '',
 
 		// @option zIndex: Number = 1
-		// The explicit [zIndex](https://developer.mozilla.org/docs/Web/CSS/CSS_Positioning/Understanding_z_index) of the tile layer.
+		// The explicit [zIndex](https://developer.mozilla.org/docs/Web/CSS/CSS_Positioning/Understanding_z_index) of the overlay layer.
 		zIndex: 1,
 
 		// @option className: String = ''
 		// A custom class name to assign to the image. Empty by default.
-		className: '',
+		className: ''
 	},
 
 	initialize: function (url, bounds, options) { // (String, LatLngBounds, Object)
@@ -9074,7 +9074,7 @@ var ImageOverlay = Layer.extend({
 		return events;
 	},
 
-	// @method: setZIndex(value: Number) : this
+	// @method setZIndex(value: Number): this
 	// Changes the [zIndex](#imageoverlay-zindex) of the image overlay.
 	setZIndex: function (value) {
 		this.options.zIndex = value;
@@ -9160,7 +9160,7 @@ var ImageOverlay = Layer.extend({
 
 	_overlayOnError: function () {
 		// @event error: Event
-		// Fired when the ImageOverlay layer has loaded its image
+		// Fired when the ImageOverlay layer fails to load its image
 		this.fire('error');
 
 		var errorUrl = this.options.errorOverlayUrl;
@@ -11220,12 +11220,6 @@ var GridLayer = Layer.extend({
 		var tile = this._tiles[key];
 		if (!tile) { return; }
 
-		// Cancels any pending http requests associated with the tile
-		// unless we're on Android's stock browser,
-		// see https://github.com/Leaflet/Leaflet/issues/137
-		if (!androidStock) {
-			tile.el.setAttribute('src', emptyImageUrl);
-		}
 		remove(tile.el);
 
 		delete this._tiles[key];
@@ -11294,8 +11288,6 @@ var GridLayer = Layer.extend({
 	},
 
 	_tileReady: function (coords, err, tile) {
-		if (!this._map || tile.getAttribute('src') === emptyImageUrl) { return; }
-
 		if (err) {
 			// @event tileerror: TileErrorEvent
 			// Fired when there is an error loading a tile.
@@ -11611,6 +11603,28 @@ var TileLayer = GridLayer.extend({
 				}
 			}
 		}
+	},
+
+	_removeTile: function (key) {
+		var tile = this._tiles[key];
+		if (!tile) { return; }
+
+		// Cancels any pending http requests associated with the tile
+		// unless we're on Android's stock browser,
+		// see https://github.com/Leaflet/Leaflet/issues/137
+		if (!androidStock) {
+			tile.el.setAttribute('src', emptyImageUrl);
+		}
+
+		return GridLayer.prototype._removeTile.call(this, key);
+	},
+
+	_tileReady: function (coords, err, tile) {
+		if (!this._map || (tile && tile.getAttribute('src') === emptyImageUrl)) {
+			return;
+		}
+
+		return GridLayer.prototype._tileReady.call(this, coords, err, tile);
 	}
 });
 
@@ -12073,7 +12087,7 @@ var Canvas = Renderer.extend({
 
 	_updateDashArray: function (layer) {
 		if (typeof layer.options.dashArray === 'string') {
-			var parts = layer.options.dashArray.split(','),
+			var parts = layer.options.dashArray.split(/[, ]+/),
 			    dashArray = [],
 			    i;
 			for (i = 0; i < parts.length; i++) {
@@ -13760,91 +13774,5 @@ Map.TouchZoom = TouchZoom;
 
 Object.freeze = freeze;
 
-exports.version = version;
-exports.Control = Control;
-exports.control = control;
-exports.Browser = Browser;
-exports.Evented = Evented;
-exports.Mixin = Mixin;
-exports.Util = Util;
-exports.Class = Class;
-exports.Handler = Handler;
-exports.extend = extend;
-exports.bind = bind;
-exports.stamp = stamp;
-exports.setOptions = setOptions;
-exports.DomEvent = DomEvent;
-exports.DomUtil = DomUtil;
-exports.PosAnimation = PosAnimation;
-exports.Draggable = Draggable;
-exports.LineUtil = LineUtil;
-exports.PolyUtil = PolyUtil;
-exports.Point = Point;
-exports.point = toPoint;
-exports.Bounds = Bounds;
-exports.bounds = toBounds;
-exports.Transformation = Transformation;
-exports.transformation = toTransformation;
-exports.Projection = index;
-exports.LatLng = LatLng;
-exports.latLng = toLatLng;
-exports.LatLngBounds = LatLngBounds;
-exports.latLngBounds = toLatLngBounds;
-exports.CRS = CRS;
-exports.GeoJSON = GeoJSON;
-exports.geoJSON = geoJSON;
-exports.geoJson = geoJson;
-exports.Layer = Layer;
-exports.LayerGroup = LayerGroup;
-exports.layerGroup = layerGroup;
-exports.FeatureGroup = FeatureGroup;
-exports.featureGroup = featureGroup;
-exports.ImageOverlay = ImageOverlay;
-exports.imageOverlay = imageOverlay;
-exports.VideoOverlay = VideoOverlay;
-exports.videoOverlay = videoOverlay;
-exports.DivOverlay = DivOverlay;
-exports.Popup = Popup;
-exports.popup = popup;
-exports.Tooltip = Tooltip;
-exports.tooltip = tooltip;
-exports.Icon = Icon;
-exports.icon = icon;
-exports.DivIcon = DivIcon;
-exports.divIcon = divIcon;
-exports.Marker = Marker;
-exports.marker = marker;
-exports.TileLayer = TileLayer;
-exports.tileLayer = tileLayer;
-exports.GridLayer = GridLayer;
-exports.gridLayer = gridLayer;
-exports.SVG = SVG;
-exports.svg = svg$1;
-exports.Renderer = Renderer;
-exports.Canvas = Canvas;
-exports.canvas = canvas$1;
-exports.Path = Path;
-exports.CircleMarker = CircleMarker;
-exports.circleMarker = circleMarker;
-exports.Circle = Circle;
-exports.circle = circle;
-exports.Polyline = Polyline;
-exports.polyline = polyline;
-exports.Polygon = Polygon;
-exports.polygon = polygon;
-exports.Rectangle = Rectangle;
-exports.rectangle = rectangle;
-exports.Map = Map;
-exports.map = createMap;
-
-var oldL = window.L;
-exports.noConflict = function() {
-	window.L = oldL;
-	return this;
-}
-
-// Always export us to window global (see #2364)
-window.L = exports;
-
-})));
-//# sourceMappingURL=leaflet-src.js.map
+export { version, Control, control, Browser, Evented, Mixin, Util, Class, Handler, extend, bind, stamp, setOptions, DomEvent, DomUtil, PosAnimation, Draggable, LineUtil, PolyUtil, Point, toPoint as point, Bounds, toBounds as bounds, Transformation, toTransformation as transformation, index as Projection, LatLng, toLatLng as latLng, LatLngBounds, toLatLngBounds as latLngBounds, CRS, GeoJSON, geoJSON, geoJson, Layer, LayerGroup, layerGroup, FeatureGroup, featureGroup, ImageOverlay, imageOverlay, VideoOverlay, videoOverlay, DivOverlay, Popup, popup, Tooltip, tooltip, Icon, icon, DivIcon, divIcon, Marker, marker, TileLayer, tileLayer, GridLayer, gridLayer, SVG, svg$1 as svg, Renderer, Canvas, canvas$1 as canvas, Path, CircleMarker, circleMarker, Circle, circle, Polyline, polyline, Polygon, polygon, Rectangle, rectangle, Map, createMap as map };
+//# sourceMappingURL=leaflet-src.esm.js.map

@@ -79,6 +79,7 @@
                         <h2 class="ph" style="display:none"><span aria-hidden="true" class="glyphicon glyphicon-scale"></span> {{_('pH sensor')}} <span class="title">{{_('new')}}</span></h2>
                         <h2 class="light uva uvb" style="display:none"><span aria-hidden="true" class="glyphicon glyphicon-adjust"></span> {{_('Light sensor')}} <span class="title">{{_('new')}}</span></h2>
                         <h2 class="fertility" style="display:none"><span aria-hidden="true" class="glyphicon glyphicon-grain"></span> {{_('Fertility sensor')}} <span class="title">{{_('new')}}</span></h2>
+                        <h2 class="co2" style="display:none"><span aria-hidden="true" class="glyphicon glyphicon-tree-conifer"></span> {{_('CO2 sensor')}} <span class="title">{{_('new')}}</span></h2>
                         <ul class="nav navbar-right panel_toolbox">
                           <li>
                             <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
@@ -101,6 +102,7 @@
                                 <option value="dht22">{{_('DHT22')}}</option>
                                 <option value="am2302">{{_('AM2302')}}</option>
                                 <option value="sht2x">{{_('SHT2X')}}</option>
+                                <option value="sht3x">{{_('SHT3X')}}</option>
                                 <option value="htu21d">{{_('HTU21D')}}</option>
                                 <option value="si7021">{{_('SI7021')}}</option>
                                 <option value="bme280">{{_('BME280 / BMP280')}}</option>
@@ -135,6 +137,8 @@
                                 <option value="uva">{{_('UVA')}}</option>
                                 <option value="uvb">{{_('UVB')}}</option>
                                 <option value="fertility">{{_('Fertility')}}</option>
+                                <option value="co2">{{_('CO2')}}</option>
+                                <option value="volume">{{_('Volume')}}</option>
                               </select>
                             </div>
                           </div>

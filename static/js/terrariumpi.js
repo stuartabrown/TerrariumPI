@@ -20,11 +20,12 @@ var globals = {
 var source_row = null;
 // Translations for dataTable module
 var dataTableTranslations = {
-  'en' : '//cdn.datatables.net/plug-ins/1.10.16/i18n/English.json',
-  'nl' : '//cdn.datatables.net/plug-ins/1.10.16/i18n/Dutch.json',
-  'de' : '//cdn.datatables.net/plug-ins/1.10.16/i18n/German.json',
-  'it' : '//cdn.datatables.net/plug-ins/1.10.16/i18n/Italian.json',
-  'fr' : '//cdn.datatables.net/plug-ins/1.10.16/i18n/France.json'
+  'en' : '//cdn.datatables.net/plug-ins/1.10.19/i18n/English.json',
+  'nl' : '//cdn.datatables.net/plug-ins/1.10.19/i18n/Dutch.json',
+  'de' : '//cdn.datatables.net/plug-ins/1.10.19/i18n/German.json',
+  'it' : '//cdn.datatables.net/plug-ins/1.10.19/i18n/Italian.json',
+  'fr' : '//cdn.datatables.net/plug-ins/1.10.19/i18n/France.json',
+  'no' : '//cdn.datatables.net/plug-ins/1.10.19/i18n/Norwegian-Bokmal.json'
 };
 
 /**
@@ -683,7 +684,7 @@ function process_form() {
 function prepare_form_data(form) {
   var formdata = [];
   var form_type = form.attr('action').split('/').pop();
-  var re = /(sensor|switch|webcam|light|humidity|temperature|watertank|moisture|conductivity|ph|door|profile|playlist)(_\d+)?_(.*)/i;
+  var re = /(sensor|switch|webcam|light|humidity|temperature|watertank|moisture|conductivity|ph|co2|fertility|door|profile|playlist)(_\d+)?_(.*)/i;
   var matches = null;
   var objectdata = {};
   var prev_nr = -1;
@@ -1181,6 +1182,14 @@ function history_graph(name, data, type) {
             val = formatNumber(val) + ' µS/cm';
             break;
 
+          case 'co2':
+            val = formatNumber(val) + ' ppm';
+            break
+
+          case 'volume':
+            val = formatNumber(val) + ' ' + globals.volume_indicator;
+            break
+
           case 'uva':
           case 'uvb':
             val = formatNumber(val) + 'µW/cm^2';
@@ -1196,12 +1205,6 @@ function history_graph(name, data, type) {
   };
 
   switch (type) {
-    case 'humidity':
-    case 'temperature':
-    case 'distance':
-    case 'ph':
-    case 'moisture':
-    case 'conductivity':
     case 'light':
       if (data.light_average !== undefined && data.light_average) {
 
@@ -1241,11 +1244,18 @@ function history_graph(name, data, type) {
         }];
       }
       break;
-
+    case 'humidity':
+    case 'temperature':
+    case 'distance':
+    case 'ph':
+    case 'moisture':
+    case 'conductivity':
     case 'light_percentage':
     case 'uva':
     case 'uvb':
     case 'fertility':
+    case 'co2':
+    case 'volume':
       graph_data = [{
         label: '{{_('Current')}}',
         data: data.current
@@ -1689,6 +1699,18 @@ function update_dashboard_environment(name, data) {
     case 'ph':
       enabledColor = 'green';
       break;
+    case 'fertility':
+      enabledColor = 'green';
+      indicator = 'µS/cm';
+      break;
+    case 'co2':
+      enabledColor = 'green';
+      indicator = 'ppm';
+      break;
+    case 'volume':
+      enabledColor = 'blue';
+      indicator = 'L';
+      break;
   }
 
   systempart.find('h4').removeClass('orange blue red').addClass(data.enabled ? enabledColor : '');
@@ -1944,7 +1966,7 @@ function add_power_switch_status_row(data) {
   new_row.attr('id','powerswitch_' + data.id);
 
   // Change the toggle icon with a slider knob
-  if ('pwm-dimmer' === data.hardwaretype || 'remote-dimmer' === data.hardwaretype) {
+  if ('pwm-dimmer' === data.hardwaretype || 'remote-dimmer' === data.hardwaretype || 'dc-dimmer' === data.hardwaretype) {
     new_row.find('div.x_content div.power_switch')
       .removeClass('big')
       .addClass('dimmer')
@@ -2021,7 +2043,7 @@ function update_power_switch(data) {
   });
 
   // Open or hide the dimmer values (will not trigger on the select field)
-  if ('pwm-dimmer' === data.hardwaretype || 'remote-dimmer' === data.hardwaretype) {
+  if ('pwm-dimmer' === data.hardwaretype || 'remote-dimmer' === data.hardwaretype || 'dc-dimmer' === data.hardwaretype) {
     content_row.find('.row.dimmer').show();
   } else {
     // Remove dimmer row, else form submit is 'stuck' on hidden fields that have invalid patterns... :(
