@@ -31,7 +31,7 @@ from gevent import monkey, sleep
 monkey.patch_all()
 
 class terrariumSwitch(object):
-  VALID_HARDWARE_TYPES = ['ftdi','gpio','gpio-inverse','pwm-dimmer','remote','remote-dimmer','eg-pm-usb','eg-pm-lan','eg-pm-rf','dc-dimmer','wemo']
+  VALID_HARDWARE_TYPES = ['ftdi','gpio','gpio-inverse','pwm-dimmer','remote','remote-dimmer','eg-pm-usb','eg-pm-lan','eg-pm-rf','dc-dimmer','wemo','solenoid']
 
   OFF = False
   ON = True
@@ -75,10 +75,6 @@ class terrariumSwitch(object):
       self.__load_pwm_device()
     elif self.get_hardware_type() == 'dc-dimmer':
       self.__load_dc_dimmer_device()
-    elif 'remote' in self.get_hardware_type():
-      pass
-    elif 'gpio' in self.get_hardware_type():
-      self.__load_gpio_device()
 
     self.set_name(name)
     self.set_address(address)
@@ -136,9 +132,6 @@ class terrariumSwitch(object):
 
   def __load_eg_pm_usb_device(self):
     self.device = 0
-
-  def __load_gpio_device(self):
-    pass
 
   def __load_pwm_device(self):
     self.__dimmer_running = False
@@ -354,6 +347,17 @@ class terrariumSwitch(object):
         else:
           logger.error('Could not toggle WeMo switch \'%s\' could not connect to remote source \'%s\'' % (self.get_name(),self.get_address()))
 
+      elif 'solenoid' ==  self.get_hardware_type():
+        # if state, then 'forward' else 'reverse'
+        gpio_pins = address.split(',')
+        self.device.ChangeDutyCycle(100)
+        GPIO.output(terrariumUtils.to_BCM_port_number(gpio_pins[1]),GPIO.HIGH if state else GPIO.LOW)
+        GPIO.output(terrariumUtils.to_BCM_port_number(gpio_pins[2]),GPIO.LOW if state else GPIO.HIGH)
+        sleep(0.1)
+        self.device.ChangeDutyCycle(0)
+        GPIO.output(terrariumUtils.to_BCM_port_number(gpio_pins[1]),GPIO.LOW)
+        GPIO.output(terrariumUtils.to_BCM_port_number(gpio_pins[2]),GPIO.LOW)
+
       self.state = state
       if not self.__is_dimmer():
         logger.info('Toggle switch \'%s\' from %s',self.get_name(),('off to on' if self.is_on() else 'on to off'))
@@ -512,6 +516,24 @@ class terrariumSwitch(object):
     elif 'gpio' in self.get_hardware_type():
       try:
         GPIO.setup(terrariumUtils.to_BCM_port_number(self.get_address()), GPIO.OUT)
+      except Exception as err:
+        logger.warning(err)
+        pass
+    elif 'solenoid' in self.get_hardware_type():
+      # Input: 0/e = energie, 1/f = forward, 2/r = reverse
+      try:
+        gpio_pins = address.split(',')
+        GPIO.setup(terrariumUtils.to_BCM_port_number(gpio_pins[0]),GPIO.OUT)
+        GPIO.setup(terrariumUtils.to_BCM_port_number(gpio_pins[1]),GPIO.OUT)
+        GPIO.setup(terrariumUtils.to_BCM_port_number(gpio_pins[2]),GPIO.OUT)
+
+        self.device = GPIO.PWM(terrariumUtils.to_BCM_port_number(gpio_pins[0]), 50)  # 50Hz frequency
+        self.device.start(0)
+
+        GPIO.output(terrariumUtils.to_BCM_port_number(gpio_pins[0]),GPIO.HIGH)
+        GPIO.output(terrariumUtils.to_BCM_port_number(gpio_pins[1]),GPIO.LOW)
+        GPIO.output(terrariumUtils.to_BCM_port_number(gpio_pins[2]),GPIO.LOW)
+
       except Exception as err:
         logger.warning(err)
         pass
