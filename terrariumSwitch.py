@@ -348,12 +348,15 @@ class terrariumSwitch(object):
           logger.error('Could not toggle WeMo switch \'%s\' could not connect to remote source \'%s\'' % (self.get_name(),self.get_address()))
 
       elif 'solenoid' ==  self.get_hardware_type():
-        # if state, then 'forward' else 'reverse'
+        # if state, then 'forward' else 'reverse' power on pulse
+        # https://github.com/sbcshop/MotorShield/blob/master/PiMotor.py
         gpio_pins = address.split(',')
         self.device.ChangeDutyCycle(100)
         GPIO.output(terrariumUtils.to_BCM_port_number(gpio_pins[1]),GPIO.HIGH if state else GPIO.LOW)
         GPIO.output(terrariumUtils.to_BCM_port_number(gpio_pins[2]),GPIO.LOW if state else GPIO.HIGH)
+        # Keep power on to let the device switch state
         sleep(0.1)
+        # Power down the board....
         self.device.ChangeDutyCycle(0)
         GPIO.output(terrariumUtils.to_BCM_port_number(gpio_pins[1]),GPIO.LOW)
         GPIO.output(terrariumUtils.to_BCM_port_number(gpio_pins[2]),GPIO.LOW)
