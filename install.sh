@@ -1,6 +1,9 @@
 #!/bin/bash
 BASEDIR=$(dirname $(readlink -nf $0))
 SCRIPT_USER=`who -m | awk '{print $1}'`
+if [ "" == "${SCRIPT_USER}" ]; then
+  SCRIPT_USER="pi"
+fi
 SCRIPT_USER_ID=`id -u ${SCRIPT_USER}`
 VERSION=`grep ^version defaults.cfg | cut -d' ' -f 3`
 WHOAMI=`whoami`
@@ -53,14 +56,14 @@ esac
 # Install required packages to get the terrarium software running
 PYTHON_LIBS=""
 if [ $PYTHON -eq 2 ]; then
-  PYTHON_LIBS="python-pip python-dev python-mediainfodll python-smbus python-pil python-opencv python-numpy"
+  PYTHON_LIBS="python-pip python-dev python-mediainfodll python-smbus python-pil python-opencv python-numpy python-lxml"
 elif [ $PYTHON -eq 3 ]; then
-  PYTHON_LIBS="libgstreamer1.0-0 python3-pip python3-dev python3-mediainfodll python3-smbus python3-pil python3-numpy"
+  PYTHON_LIBS="python3-pip python3-dev python3-mediainfodll python3-smbus python3-pil python3-numpy python3-lxml"
 fi
 
 debconf-apt-progress -- apt-get -y update
 debconf-apt-progress -- apt-get -y full-upgrade
-debconf-apt-progress -- apt-get -y install libftdi1 screen git subversion watchdog build-essential i2c-tools pigpio owserver sqlite3 vlc-nox libasound2-dev sispmctl lshw libffi-dev ntp libglib2.0-dev rng-tools libcblas3 libatlas3-base libjasper1 libgstreamer0.10-0 libgtk-3-0 libxml2-dev libxslt1-dev $PYTHON_LIBS
+debconf-apt-progress -- apt-get -y install libftdi1 screen git subversion watchdog build-essential i2c-tools pigpio owserver sqlite3 vlc-nox ffmpeg libasound2-dev sispmctl lshw libffi-dev ntp libglib2.0-dev rng-tools libcblas3 libatlas3-base libjasper1 libgstreamer0.10-0 libgstreamer1.0-0 libilmbase12 libopenexr22 libgtk-3-0 libxml2-dev libxslt1-dev python-twisted $PYTHON_LIBS
 
 PROGRESS=35
 # Update submodules if downloaded through tar or zip
@@ -98,21 +101,51 @@ PIP_MODULES="python-dateutil rpi.gpio psutil picamera pigpio requests gpiozero g
 if [ $PYTHON -eq 3 ]; then
   PIP_MODULES="${PIP_MODULES} opencv-python-headless"
 fi
+NUMBER_OF_MODULES=($PIP_MODULES)
+NUMBER_OF_MODULES=${#NUMBER_OF_MODULES[@]}
+MODULE_COUNTER=1
 for PIP_MODULE in ${PIP_MODULES}
 do
   PROGRESS=$((PROGRESS + 2))
-  cat <<EOF
+  ATTEMPT=1
+  MAX_ATTEMPTS=5
+  while [ $ATTEMPT -le $MAX_ATTEMPTS ]
+  do
+
+    cat <<EOF
 XXX
 $PROGRESS
-Install required software (some modules will take 5-10 min.)\n\nInstalling python${PYTHON} module ${PIP_MODULE} ...
+Install required software (some modules will take 5-10 min.)
+
+Installing python${PYTHON} module ${MODULE_COUNTER} out of ${NUMBER_OF_MODULES}: ${PIP_MODULE} (attempt ${ATTEMPT}) ...
 XXX
 EOF
-  if [ $PYTHON -eq 2 ]; then
-    pip2 install -q --upgrade ${PIP_MODULE}
-  elif [ $PYTHON -eq 3 ]; then
-    pip3 install -q --upgrade ${PIP_MODULE}
-  fi
+    if [ $PYTHON -eq 2 ]; then
+      pip2 install -q --upgrade ${PIP_MODULE}
+    elif [ $PYTHON -eq 3 ]; then
+      pip3 install -q --upgrade ${PIP_MODULE}
+    fi
+
+    if [ $? -eq 0 ]; then
+      # PIP install succeeded normally
+      ATTEMPT=$((ATTEMPT + 99))
+    else
+      # PIP install failure... retry..
+      ATTEMPT=$((ATTEMPT + 1))
+    fi
+
+  done
+
+  MODULE_COUNTER=$((MODULE_COUNTER + 1))
+
 done
+
+if [ $PYTHON -eq 3 ]; then
+  # Remove pip numpy install that comes with an upgrade of another module. Does not work
+  # Removing this will fallback to OS default
+  pip3 uninstall -y -q numpy
+fi
+
 
 cd "${BASEDIR}"
 chown ${SCRIPT_USER}. .

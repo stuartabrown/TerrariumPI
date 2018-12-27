@@ -29,7 +29,7 @@ import json
 import requests
 
 from terrariumUtils import terrariumUtils, terrariumSingleton
-from terrariumDisplay import terrariumDisplay
+from terrariumDisplay import terrariumDisplay, terrariumDisplaySourceException
 
 from gevent import monkey, sleep
 monkey.patch_all()
@@ -69,6 +69,9 @@ class terrariumNotificationMessage(object):
 
   def is_display_enabled(self):
     return self.message != '' and 'display' in self.services
+
+  def is_webhook_enabled(self):
+    return self.message != '' and 'webhook' in self.services
 
   def get_data(self):
     return {'id':self.get_id(),
@@ -194,8 +197,8 @@ class terrariumNotificationTelegramBot(object):
     print('%s - INFO    - terrariumNotificatio - TelegramBot is stopped' % (datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S,%f')[:23],))
 
 class terrariumNotification(terrariumSingleton):
-  __MAX_MESSAGES_TOTAL_PER_MINUTE = 5
-  __MAX_MESSAGES_PER_MINUTE = 2
+  __MAX_MESSAGES_TOTAL_PER_MINUTE = 12
+  __MAX_MESSAGES_PER_MINUTE = 6
 
   __regex_parse = re.compile(r'%(?P<index>[^% ]+)%')
 
@@ -265,6 +268,7 @@ class terrariumNotification(terrariumSingleton):
     self.pushover = None
     self.telegram = None
     self.display = None
+    self.webhook = None
 
     self.set_profile_image(profile_image)
     if trafficlights is not None and len(trafficlights) == 3:
@@ -325,6 +329,9 @@ class terrariumNotification(terrariumSingleton):
       self.set_display(self.__data.get('display','address'),
                        self.__data.get('display','resolution'),
                        self.__data.get('display','title'))
+
+    if self.__data.has_section('webhook'):
+      self.set_webhook(self.__data.get('webhook','address').replace('%%','%'))
 
   def __load_messages(self,data = None):
     self.messages = {}
@@ -576,7 +583,10 @@ class terrariumNotification(terrariumSingleton):
   def set_display(self,address,resolution,title):
     self.display = None
     if address is not None and '' != address:
-      self.display = terrariumDisplay(None,address,'notification',resolution,title)
+      try:
+        self.display = terrariumDisplay(None,address,'notification',resolution,title)
+      except terrariumDisplaySourceException as ex:
+        self.display = None
 
       if self.__profile_image is not None:
         self.display.write_image(self.__profile_image)
@@ -584,6 +594,29 @@ class terrariumNotification(terrariumSingleton):
   def send_display(self,messages):
     if self.display is not None:
       self.display.message(messages)
+
+  def set_webhook(self,address):
+      self.webhook = {'address' : address}
+
+  def send_webhook(self,subject,message,files = []):
+    url = subject.decode()
+    webhook = terrariumUtils.parse_url(url)
+    if not webhook:
+      return
+
+    try:
+      message = ','.join(message.decode().split('\n'))
+      message = '{' + message.replace(':False',':false').replace(':True',':true').replace('\'','"') + '}'
+      message = json.loads(message)
+
+      headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+      r = requests.post(url, data=json.dumps(message), headers=headers)
+      if r.status_code != 200:
+        print('Error sending webhook to url \'\' with status code: {}'.format(url,r.status_code))
+
+    except Exception as ex:
+      print('send_webhook exception:')
+      print(ex)
 
   def message(self,message_id,data = None,files = []):
     self.send_notication_led(message_id)
@@ -595,6 +628,14 @@ class terrariumNotification(terrariumSingleton):
     title = self.__parse_message(self.messages[message_id].get_title(),data)
     message = self.__parse_message(self.messages[message_id].get_message(),data)
 
+    if '' == title:
+      title = 'no_title'
+
+    # Do not rate limit webhooks
+    if self.messages[message_id].is_webhook_enabled():
+      # Always use raw_data for webhooks
+      self.send_webhook(self.__parse_message(self.webhook['address'],data),self.__parse_message('%raw_data%',data),files)
+
     if title not in self.__ratelimit_messages:
       self.__ratelimit_messages[title] = {}
 
@@ -603,7 +644,7 @@ class terrariumNotification(terrariumSingleton):
 
     if self.__ratelimit_messages[title][now] > terrariumNotification.__MAX_MESSAGES_PER_MINUTE:
       print('%s - WARNING - terrariumNotificatio - Max messages per minute %s reached for \'%s\'' % (datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S,%f')[:23],
-                                                                                                 terrariumNotification.__MAX_MESSAGES_PER_MINUTE, title))
+                                                                                                 terrariumNotification.__MAX_MESSAGES_PER_MINUTE, title.decode()))
       return
 
     if self.__ratelimit() > terrariumNotification.__MAX_MESSAGES_TOTAL_PER_MINUTE:
@@ -611,7 +652,11 @@ class terrariumNotification(terrariumSingleton):
                                                                                                 terrariumNotification.__MAX_MESSAGES_TOTAL_PER_MINUTE))
       return
 
-    self.__ratelimit_messages[title][now] += 1
+    try:
+      self.__ratelimit_messages[title][now] += 1
+    except KeyError as ex:
+      # Somehow we get a key error while it should be there....
+      self.__ratelimit_messages[title][now] = 1
 
     if self.messages[message_id].is_email_enabled():
       self.send_email(title,message,files)
@@ -659,6 +704,8 @@ class terrariumNotification(terrariumSingleton):
                                       'resolution' : data['display_resolution'],
                                       'title'      : data['display_title']})
 
+      self.__update_config('webhook',{'address'    : data['webhook_address']})
+
     except Exception as ex:
       print(ex)
 
@@ -690,6 +737,7 @@ class terrariumNotification(terrariumSingleton):
       'twitter'  : dict(self.twitter) if self.twitter is not None else {},
       'pushover' : dict(self.pushover) if self.pushover is not None else {},
       'telegram' : self.telegram.get_config() if self.telegram is not None else {},
+      'webhook'  : dict(self.webhook) if self.webhook is not None else {},
       'messages' : self.get_messages() }
 
     if self.email is not None:

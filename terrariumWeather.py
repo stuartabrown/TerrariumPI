@@ -97,9 +97,9 @@ class terrariumWeatherSource(object):
 
     return None
 
-  def update(self):
+  def update(self,force = False):
     starttime = time.time()
-    if not self.__running and ((int(starttime) - self.get_last_update()) >= terrariumWeatherSource.UPDATE_TIMEOUT):
+    if force or not self.__running and ((int(starttime) - self.get_last_update()) >= terrariumWeatherSource.UPDATE_TIMEOUT):
       self.__running = True
       logger.debug('Start getting new {} weather data from location: \'{}\''.format(self.get_type(),self.get_source()))
       # Some default sun rise and sun set when there no valid weather data. This is the bear minimum to keep the software running
@@ -111,6 +111,8 @@ class terrariumWeatherSource(object):
                                                                                                                           time.time()-starttime,
                                                                                                                           len(self.get_forecast('day')),
                                                                                                                           len(self.get_forecast('all'))))
+      self.__running = False
+      self.__last_update = int(starttime)
 
     # Update hourly forecast for today
     now = int(starttime)
@@ -129,9 +131,6 @@ class terrariumWeatherSource(object):
         send_message = True
       elif now < self.week_forecast[period]['to']:
         break
-
-    self.__last_update = int(starttime)
-    self.__running = False
 
     # Send message when there where changes
     if send_message:
@@ -187,7 +186,7 @@ class terrariumWeatherSource(object):
   def set_source(self,url,refresh = False):
     self.source = url.replace('http://','https://')
     if refresh:
-      self.update()
+      self.update(refresh)
 
     return True
 
@@ -308,7 +307,7 @@ class terrariumWeatherYRno(terrariumWeatherSource):
 
 class terrariumWeatherWunderground(terrariumWeatherSource):
   TYPE = 'Wunderground.com'
-  VALID_SOURCE = '^https?://api\.wunderground\.com/api/[^/]+/(?P<p1>[^/]+)/(?P<p2>[^/]+)/(?P<p3>[^/]+)/q/(?P<country>[^/]+)/(?P<city>[^/]+)\.json$'
+  VALID_SOURCE = '^https?://api\.wunderground\.com/api/[a-z0-9]{16}/geolookup/astronomy/hourly10day/q/(?P<country>[^/]+)/(?P<city>[^/]+)\.json$'
   INFO_SOURCE = 'https://api.wunderground.com/api/[YOUR_API_KEY]/geolookup/astronomy/hourly10day/q/[COUNTRY]/[CITY].json'
 
   def load_data(self):

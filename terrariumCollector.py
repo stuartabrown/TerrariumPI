@@ -7,6 +7,8 @@ import time
 import copy
 import os
 
+from terrariumUtils import terrariumUtils
+
 class terrariumCollector(object):
   DATABASE = 'history.db'
   # Store data every Xth minute. Except switches and doors
@@ -111,6 +113,18 @@ class terrariumCollector(object):
                                'DROP INDEX IF EXISTS door_data_id',
                                'CREATE INDEX IF NOT EXISTS door_data_id ON door_data (id, timestamp ASC)']}
 
+    try:
+      with open('.collector.update.{}.sql'.format('393'),'r') as sql_file:
+        table_upgrades['393'] = [line.strip() for line in sql_file.readlines()]
+
+      os.remove('.collector.update.{}.sql'.format('393'))
+      logger.warning('There are {} sensors that have an updated ID and needs to be renamed in the database. This can take a lot of time! Please wait...'
+                     .format(len(table_upgrades['393'])/2))
+
+    except IOError as ex:
+      # No updates... just ignore
+      pass
+
     with self.db as db:
       cur = db.cursor()
       db_version = int(cur.execute('PRAGMA user_version').fetchall()[0][0])
@@ -140,7 +154,11 @@ class terrariumCollector(object):
 
         db.commit()
         if int(to_version) % 10 == 0:
-          logger.info('Cleaning up disk space. This will take a couple of minutes depending on the database size and sd card disk speed.')
+          logger.warning('Cleaning up disk space. This will take a couple of minutes depending on the database size and sd card disk speed.')
+          filesize = os.path.getsize(terrariumCollector.DATABASE)
+          speed = 2 # MBps
+          duration = filesize / 1024.0 / 1024.0 / speed
+          logger.warning('Current database is {} in size and with a speed of {}MBps it will take {} to complete'.format(terrariumUtils.format_filesize(filesize),speed,terrariumUtils.format_uptime(duration)))
           cur.execute('VACUUM')
 
         cur.execute('PRAGMA user_version = ' + str(to_version))
@@ -250,7 +268,7 @@ class terrariumCollector(object):
             now = newdata['time']
 
           cur.execute('REPLACE INTO switch_data (id, timestamp, state, power_wattage, water_flow) VALUES (?,?,?,?,?)',
-                      (id, now, newdata['state'], newdata['power_wattage'], newdata['water_flow']))
+                      (id, now, newdata['state'], newdata['current_power_wattage'], newdata['current_water_flow']))
 
         if type in ['door']:
           cur.execute('REPLACE INTO door_data (id, timestamp, state) VALUES (?,?,?)',

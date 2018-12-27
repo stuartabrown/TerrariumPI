@@ -23,11 +23,11 @@ import re
 from hashlib import md5
 
 from terrariumConfig import terrariumConfig
-from terrariumWeather import terrariumWeather
+from terrariumWeather import terrariumWeather, terrariumWeatherSourceException
 from terrariumSensor import terrariumSensor
-from terrariumSwitch import terrariumSwitch
+from terrariumSwitch import terrariumPowerSwitch
 from terrariumDoor import terrariumDoor
-from terrariumWebcam import terrariumWebcam
+from terrariumWebcam import terrariumWebcam, terrariumWebcamSourceException
 from terrariumAudio import terrariumAudioPlayer
 from terrariumCollector import terrariumCollector
 from terrariumEnvironment import terrariumEnvironment
@@ -49,7 +49,7 @@ class terrariumEngine(object):
                     'humidity'    : '%',
                     'moisture'    : '%',
                     'conductivity': 'mS',
-                    'ph'          : 'Ph',
+                    'ph'          : 'pH',
                     'light'       : 'lux',
                     'uva'         : 'uW/cm^2',
                     'uvb'         : 'uW/cm^2',
@@ -170,13 +170,13 @@ class terrariumEngine(object):
       self.sensors = {}
 
     seen_sensors = []
-    for sensor in terrariumSensor.scan(self.__unit_type):
+    for sensor in terrariumSensor.scan_sensors(self.__unit_type):
       self.sensors[sensor.get_id()] = sensor
 
     for sensordata in sensor_config:
-      if sensordata['id'] is None or sensordata['id'] == 'None' or sensordata['id'] not in self.sensors:
+      if sensordata['id'] not in self.sensors:
         # New sensor (add)
-        sensor = terrariumSensor( None,
+        sensor = terrariumSensor(sensordata['id'],
                                  sensordata['hardwaretype'],
                                  sensordata['type'],
                                  sensordata['address'],
@@ -189,16 +189,17 @@ class terrariumEngine(object):
         sensor = self.sensors[sensordata['id']]
         # Should not be able to change setings
         #sensor.set_hardware_type(sensordata['hardwaretype'])
-        sensor.set_type(sensordata['type'],self.__unit_type)
+        #sensor.set_type(sensordata['type'],self.__unit_type)
         sensor.set_address(sensordata['address'])
-        sensor.set_name(sensordata['name'])
 
+      sensor.set_name(sensordata['name'])
+      sensor.set_max_diff(sensordata['max_diff'])
       sensor.set_alarm_min(sensordata['alarm_min'])
       sensor.set_alarm_max(sensordata['alarm_max'])
       sensor.set_limit_min(sensordata['limit_min'])
       sensor.set_limit_max(sensordata['limit_max'])
 
-      if 'chirp' == sensor.get_hardware_type():
+      if 'chirp' == sensor.get_type():
         if 'min_moist' in sensordata and sensordata['min_moist'] is not None:
           sensor.set_min_moist_calibration(sensordata['min_moist'])
         if 'max_moist' in sensordata and sensordata['max_moist'] is not None:
@@ -207,6 +208,7 @@ class terrariumEngine(object):
           sensor.set_temperature_offset_calibration(sensordata['temp_offset'])
 
       seen_sensors.append(sensor.get_id())
+
 
     if reloading:
       for sensor_id in set(self.sensors) - set(seen_sensors):
@@ -222,76 +224,61 @@ class terrariumEngine(object):
   def __load_power_switches(self,data = None):
     # Load Switches, with ID as index
     starttime = time.time()
-    reloading = data is not None
+    starting_up = data is None
 
-    logger.info('%s terrariumPI switches' % ('Reloading' if reloading else 'Loading',))
+    logger.info('{} terrariumPI switches'.format('Starting up' if starting_up else 'Updating'))
 
-    switch_config = (self.config.get_power_switches() if not reloading else data)
-    seen_switches = []
+    power_switches_config = (self.config.get_power_switches() if starting_up else data)
+    seen_power_switches = []
 
-    if not reloading:
+    if starting_up:
       self.power_switches = {}
-      for power_switch in terrariumSwitch.scan_wemo_switches(self.toggle_switch):
+      for power_switch in terrariumPowerSwitch.scan_power_switches(self.toggle_power_switch):
         self.power_switches[power_switch.get_id()] = power_switch
 
-    for switchdata in switch_config:
-      if switchdata['id'] is None or switchdata['id'] == 'None' or switchdata['id'] not in self.power_switches:
+    for power_switch_config in power_switches_config:
+      if power_switch_config['id'] in [None,'None',''] or power_switch_config['id'] not in self.power_switches:
         # New switch (add)
-        power_switch = terrariumSwitch(switchdata['id'],
-                                       switchdata['hardwaretype'],
-                                       switchdata['address'],
-                                       switchdata['name'],
-                                       switchdata['power_wattage'],
-                                       switchdata['water_flow'],
-                                       callback=self.toggle_switch,
-                                       poweroff=not reloading)
+        power_switch = terrariumPowerSwitch(power_switch_config['id'],
+                                            power_switch_config['hardwaretype'],
+                                            power_switch_config['address'],
+                                            power_switch_config['name'],
+                                            callback=self.toggle_power_switch)
         self.power_switches[power_switch.get_id()] = power_switch
       else:
         # Existing switch
-        power_switch = self.power_switches[switchdata['id']]
-        # Should not be able to change setings
-        #power_switch.set_hardware_type(switchdata['hardwaretype'])
-        power_switch.set_address(switchdata['address'])
-        power_switch.set_name(switchdata['name'])
-        power_switch.set_power_wattage(switchdata['power_wattage'])
-        power_switch.set_water_flow(switchdata['water_flow'])
-        if not reloading:
-          power_switch.off()
+        power_switch = self.power_switches[power_switch_config['id']]
+        power_switch.set_address(power_switch_config['address'])
+        power_switch.set_name(power_switch_config['name'])
 
-      if 'dimmer_duration' in switchdata and switchdata['dimmer_duration'] is not None:
-        power_switch.set_dimmer_duration(switchdata['dimmer_duration'])
-      if 'dimmer_step' in switchdata and switchdata['dimmer_step'] is not None:
-        power_switch.set_dimmer_step(switchdata['dimmer_step'])
-      if 'dimmer_on_duration' in switchdata and switchdata['dimmer_on_duration'] is not None:
-        power_switch.set_dimmer_on_duration(switchdata['dimmer_on_duration'])
-      if 'dimmer_on_percentage' in switchdata and switchdata['dimmer_on_percentage'] is not None:
-        power_switch.set_dimmer_on_percentage(switchdata['dimmer_on_percentage'])
-      if 'dimmer_off_duration' in switchdata and switchdata['dimmer_off_duration'] is not None:
-        power_switch.set_dimmer_off_duration(switchdata['dimmer_off_duration'])
-      if 'dimmer_off_percentage' in switchdata and switchdata['dimmer_off_percentage'] is not None:
-        power_switch.set_dimmer_off_percentage(switchdata['dimmer_off_percentage'])
+      power_switch.set_power_wattage(power_switch_config['power_wattage'])
+      power_switch.set_water_flow(power_switch_config['water_flow'])
 
-      if 'timer_enabled' in switchdata and switchdata['timer_enabled'] is not None:
-        power_switch.set_timer_enabled(switchdata['timer_enabled'])
-      if 'timer_start' in switchdata and switchdata['timer_start'] is not None:
-        power_switch.set_timer_start(switchdata['timer_start'])
-      if 'timer_stop' in switchdata and switchdata['timer_stop'] is not None:
-        power_switch.set_timer_stop(switchdata['timer_stop'])
-      if 'timer_on_duration' in switchdata and switchdata['timer_on_duration'] is not None:
-        power_switch.set_timer_on_duration(switchdata['timer_on_duration'])
-      if 'timer_off_duration' in switchdata and switchdata['timer_off_duration'] is not None:
-        power_switch.set_timer_off_duration(switchdata['timer_off_duration'])
+      power_switch.set_timer(power_switch_config['timer_start'],
+                             power_switch_config['timer_stop'],
+                             power_switch_config['timer_on_duration'],
+                             power_switch_config['timer_off_duration'],
+                             power_switch_config['timer_enabled'])
 
-      seen_switches.append(power_switch.get_id())
+      if power_switch.is_dimmer():
+        power_switch.set_dimmer(power_switch_config['dimmer_duration'],
+                                power_switch_config['dimmer_step'],
+                                power_switch_config['dimmer_on_duration'],
+                                power_switch_config['dimmer_off_duration'],
+                                power_switch_config['dimmer_on_percentage'],
+                                power_switch_config['dimmer_off_percentage'])
 
-    if reloading:
-      for power_switch_id in set(self.power_switches) - set(seen_switches):
+      seen_power_switches.append(power_switch.get_id())
+
+    if not starting_up:
+      for power_switch_id in set(self.power_switches) - set(seen_power_switches):
         # clean up old deleted switches
         del(self.power_switches[power_switch_id])
 
+      # Should not be needed.... environment needs callback to engine to get this information
       self.environment.set_power_switches(self.power_switches)
 
-    logger.info('Done %s terrariumPI switches. Found %d switches in %.3f seconds' % ('reloading' if reloading else 'loading',
+    logger.info('Done %s terrariumPI switches. Found %d switches in %.3f seconds' % ('starting up' if starting_up else 'updating',
                                                                                       len(self.power_switches),
                                                                                       time.time()-starttime))
 
@@ -403,6 +390,9 @@ class terrariumEngine(object):
 
       seen_webcams.append(webcam.get_id())
 
+      if reloading and webcam.is_live():
+        webcam.start()
+
     if reloading:
       for webcam_id in set(self.webcams) - set(seen_webcams):
         # clean up old deleted switches
@@ -417,10 +407,10 @@ class terrariumEngine(object):
             'water' : {'current' : 0.0 , 'max' : 0.0}}
 
     for switchid in self.power_switches:
-      data['power']['current'] += self.power_switches[switchid].get_current_power_wattage() if self.power_switches[switchid].is_on() else 0.0
+      data['power']['current'] += self.power_switches[switchid].get_current_power_wattage()
       data['power']['max'] += self.power_switches[switchid].get_power_wattage()
 
-      data['water']['current'] += self.power_switches[switchid].get_current_water_flow() if self.power_switches[switchid].is_on() else 0.0
+      data['water']['current'] += self.power_switches[switchid].get_current_water_flow()
       data['water']['max'] += self.power_switches[switchid].get_water_flow()
 
     return data
@@ -498,7 +488,7 @@ class terrariumEngine(object):
         # Update (remote) power switches
         for power_switch_id in self.power_switches:
           # Update timer trigger if activated
-          self.power_switches[power_switch_id].timer()
+          #self.power_switches[power_switch_id].timer()
           # Update the current sensor.
           self.power_switches[power_switch_id].update()
           # Make time for other web request
@@ -586,7 +576,15 @@ class terrariumEngine(object):
 
   # Weather part
   def set_weather_config(self,data):
-    return self.weather.set_source(data['location'],True) and self.config.save_weather(data)
+    try:
+      self.weather = terrariumWeather(data['location'],
+                                      self.get_temperature_indicator,
+                                      self.get_windspeed_indicator,
+                                      self.get_weather)
+    except terrariumWeatherSourceException as ex:
+      return False
+
+    return self.config.save_weather(data)
 
   def get_weather_config(self):
     return self.weather.get_config()
@@ -616,12 +614,15 @@ class terrariumEngine(object):
       for sensorid in self.sensors:
         # Filter based on sensor type
         # Exclude Chirp light sensors for average calculation in favour of Lux measurements
-        if filtertype is None or (filtertype == 'average' and not (self.sensors[sensorid].get_type() == 'light' and self.sensors[sensorid].get_hardware_type() == 'chirp')) or filtertype == self.sensors[sensorid].get_type():
+        if filtertype is None or (filtertype == 'average' and not (self.sensors[sensorid].get_sensor_type() == 'light' and self.sensors[sensorid].get_type() == 'chirp')) or filtertype == self.sensors[sensorid].get_sensor_type():
           data.append(self.sensors[sensorid].get_data())
 
     if 'average' == filtertype or len(parameters) == 2 and parameters[1] == 'average':
       average = {}
       for sensor in data:
+        if sensor['current'] is None:
+          continue
+
         sensor['type'] = 'average_' +  sensor['type']
         if sensor['type'] not in average:
           average[sensor['type']] = {'current' : 0.0, 'alarm_min' : 0.0, 'alarm_max' : 0.0, 'limit_min' : 0.0, 'limit_max':0.0, 'amount' : 0.0}
@@ -684,7 +685,7 @@ class terrariumEngine(object):
     self.__load_power_switches(data)
     return self.config.save_power_switches(self.power_switches)
 
-  def toggle_switch(self,data):
+  def toggle_power_switch(self,data):
     self.collector.log_switch_data(data)
     self.get_switches(socket=True)
     self.get_power_usage_water_flow(socket=True)
@@ -1161,7 +1162,7 @@ class terrariumEngine(object):
       if 'sensors' in parameters and 'average' in parameters and 'light' in parameters:
         exclude_ids = []
         for sensorid in self.sensors:
-          if 'chirp' == self.sensors[sensorid].get_hardware_type() and 'light' == self.sensors[sensorid].get_type():
+          if 'chirp' == self.sensors[sensorid].get_type() and 'light' == self.sensors[sensorid].get_sensor_type():
             exclude_ids.append(self.sensors[sensorid].get_id())
 
       data = self.collector.get_history(parameters=parameters,exclude_ids=exclude_ids)
