@@ -1,5 +1,5 @@
 # TerrariumPI 3.9.3
-Software for cheap home automation of your reptile terrarium or any other enclosed environment. With this software you are able to control for example a terrarium so that the temperature and humidity is of a constant value. Controlling the temperature can be done with heat lights, external heating or cooling system. As long as there is one temperature sensor available the software is able to keep a constant temperature.
+Hello Software for cheap home automation of your reptile terrarium or any other enclosed environment. With this software you are able to control for example a terrarium so that the temperature and humidity is of a constant value. Controlling the temperature can be done with heat lights, external heating or cooling system. As long as there is one temperature sensor available the software is able to keep a constant temperature.
 
 For humidity control there is support for a spraying system. The sprayer can be configured to spray for an X amount of seconds and there is a minumal period between two spray actions. Use at least one humitidy sensors to get a constant humidity value. In order to lower the humidity you can add a dehumidifier.
 
@@ -18,17 +18,25 @@ Think off:
 And all this is controlled with a nice webinterface based on [Gentelella a Bootstrap 3 template](https://github.com/puikinsh/gentelella/).
 
 ## Table of Contents
-1. [Features](#features)
-2. [Translations](#translations)
-3. [Installation](#installation)
-4. [Updating](#updating)
-5. [Hardware](#hardware)
-   1. [GPIO numbering](#gpio-numbering)
-   2. [New hardware](#new-hardware)
-6. [Remote data](#remote-data)
-7. [Screenshots](#screenshots)
-8. [Testing](#testing)
-9. [About](#about)
+- [TerrariumPI 3.9.3](#terrariumpi-393)
+  - [Table of Contents](#table-of-contents)
+  - [Features](#features)
+  - [Translations](#translations)
+  - [Installation](#installation)
+  - [Updating](#updating)
+  - [Hardware](#hardware)
+    - [GPIO numbering](#gpio-numbering)
+    - [New hardware](#new-hardware)
+  - [Remote data](#remote-data)
+  - [Screenshots](#screenshots)
+    - [Dashboard](#dashboard)
+    - [Sensors](#sensors)
+    - [Adding sensors](#adding-sensors)
+    - [Power switches](#power-switches)
+    - [Environment setup](#environment-setup)
+    - [System settings](#system-settings)
+  - [Testing](#testing)
+  - [About](#about)
 
 ## Features
 - Controlling electronic devices like lights, sprayers, heating, cooling, water pump equipment etc
