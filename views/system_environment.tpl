@@ -13,7 +13,7 @@
             <div class="clearfix"></div>
           </div>
           <div class="x_content">
-            <p>{{_('Here you can configure your environment.')}}
+            <p>{{_('Here you can configure your environment. STU TEST')}}
                {{!_('Required fields are marked with \'%s\'.') % ('<span class="required">*</span>',)}}
                {{_('Hover over the fields to get extra information.')}}
             </p>
@@ -172,6 +172,7 @@
                           <option value="disabled">{{_('Disabled')}}</option>
                           <option value="timer">{{_('Timer')}}</option>
                           <option value="sensor">{{_('Sensor')}}</option>
+                          <option value="External weather">{{_('Weather day/night')}}</option>
                           <option value="weather">{{_('Weather day/night')}}</option>
                           <option value="weatherinverse">{{_('Weather night/day')}}</option>
                         </select>
@@ -1211,7 +1212,7 @@
             <div class="col-md-12 col-sm-12 col-xs-12">
               <div class="x_panel">
                 <div class="x_title">
-                  <h2 class="blue"><i class="fa fa-tint"></i> {{_('Water tank')}} <small class="data_update">{{_('Settings')}}</small></h2>
+                  <h2 class="blue"><i class="fa fa-tint"></i> {{_('Water tank STU TEST')}} <small class="data_update">{{_('Settings')}}</small></h2>
                   <ul class="nav navbar-right panel_toolbox">
                     <li>
                       <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>

@@ -74,7 +74,7 @@
                   <div class="col-md-12 col-sm-12 col-xs-12">
                     <div class="x_panel">
                       <div class="x_title">
-                        <h2 class="temperature"><span aria-hidden="true" class="glyphicon glyphicon-fire"></span> {{_('Temperature sensor')}} <span class="title">{{_('new')}}</span></h2>
+                        <h2 class="temperature"><span aria-hidden="true" class="glyphicon glyphicon-fire"></span> {{_('Temperature sensor STU')}} <span class="title">{{_('new')}}</span></h2>
                         <h2 class="humidity" style="display:none"><span aria-hidden="true" class="glyphicon glyphicon-tint"></span> {{_('Humidity sensor')}} <span class="title">{{_('new')}}</span></h2>
                         <h2 class="moisture" style="display:none"><span aria-hidden="true" class="glyphicon glyphicon-tint"></span> {{_('Moisture sensor')}} <span class="title">{{_('new')}}</span></h2>
                         <h2 class="conductivity" style="display:none"><span aria-hidden="true" class="glyphicon glyphicon-tint"></span> {{_('Conductivity sensor')}} <span class="title">{{_('new')}}</span></h2>

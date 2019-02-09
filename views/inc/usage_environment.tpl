@@ -229,6 +229,7 @@
                                     <select class="form-control" name="heater_mode" tabindex="-1" placeholder="{{_('Select an option')}}">
                                       <option value="timer">{{_('Timer')}}</option>
                                       <option value="weather">{{_('Weather')}}</option>
+                                      <option value="External weather">{{_('External Weather')}}</option>
                                       <option value="sensor">{{_('Sensor')}}</option>
                                     </select>
                                   </div>
